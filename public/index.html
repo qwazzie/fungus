@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Грибофон</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="phone-case">
+        <div class="screen">
+
+            <!-- ВЕРХНЯЯ ПАНЕЛЬ / ШАПКА -->
+            <div class="header">
+                <div class="mushroom-btn" id="menuToggle">🍄</div>
+                <div class="chat-title">Чат: ГРИБОНИКА</div>
+            </div>
+
+            <!-- ВЫПАДАЮЩЕЕ МЕНЮ (НАСТРОЙКИ / ЛОР) -->
+            <div class="dropdown-menu hidden" id="dropdownMenu">
+                <div class="menu-item">НАСТРОЙКИ</div>
+                <div class="menu-item">ЧТО ЭТО (ЛОР)</div>
+                <div class="menu-item">ПРОЕКТ</div>
+                <div class="menu-item toggle-row">
+                    <span>Аватарки</span>
+                    <input type="checkbox" id="avatarToggle">
+                </div>
+            </div>
+
+            <!-- ОБЛАСТЬ СООБЩЕНИЙ -->
+            <div class="chat-messages" id="chatMessages">
+                <div class="message-bubble">
+                    <div class="msg-author">РИН 🍄</div>
+                    <div class="msg-text">Пий зи спяшь отс рин</div>
+                </div>
+                <div class="message-bubble">
+                    <div class="msg-author">КВАС 💧</div>
+                    <div class="msg-text">Это. Бакий ян, всоди кали флы?</div>
+                </div>
+            </div>
+
+            <!-- ПАНЕЛЬ УПРАВЛЕНИЯ И ВВОДА -->
+            <div class="control-panel">
+                <!-- Селектор отправителя (персонажи) -->
+                <div class="sender-selector">
+                    <select id="senderSelect">
+                        <option value="РИН 🍄">РИН 🍄</option>
+                        <option value="КВАС 💧">КВАС 💧</option>
+                        <option value="КИРОСИН 🔥">КИРОСИН 🔥</option>
+                        <option value="МАФ 🌿">МАФ 🌿</option>
+                        <option value="БАРАБАН 🥁">БАРАБАН 🥁</option>
+                        <option value="НИЯ 🍄">НИЯ 🍄</option>
+                    </select>
+                </div>
+
+                <!-- Строка ввода -->
+                <div class="input-row">
+                    <input type="text" id="messageInput" placeholder="Введите сообщение...">
+                    <button id="sendBtn">➤</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Подключаем Socket.io из node_modules или CDN -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

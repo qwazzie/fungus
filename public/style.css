@@ -1,0 +1,182 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: monospace;
+}
+
+body {
+    background-color: #121816;
+    color: #d1e8e2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Корпус «Грибофона» */
+.phone-case {
+    width: 100%;
+    max-width: 420px;
+    height: 100vh;
+    max-height: 850px;
+    background: #2b3a35;
+    border: 6px solid #4a6b5d;
+    border-radius: 30px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+/* Экран */
+.screen {
+    background: #1b2622;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Шапка */
+.header {
+    background: #24332d;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    border-bottom: 2px solid #3c5248;
+    position: relative;
+}
+
+.mushroom-btn {
+    font-size: 24px;
+    cursor: pointer;
+    background: #354d43;
+    padding: 4px 8px;
+    border-radius: 8px;
+    margin-right: 15px;
+}
+
+.chat-title {
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    color: #8ab8a3;
+}
+
+/* Выпадающее меню настроек */
+.dropdown-menu {
+    position: absolute;
+    top: 55px;
+    left: 15px;
+    background: #2c3e37;
+    border: 2px solid #557a6b;
+    border-radius: 10px;
+    width: 200px;
+    z-index: 10;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+}
+
+.dropdown-menu.hidden {
+    display: none;
+}
+
+.menu-item {
+    padding: 10px 15px;
+    border-bottom: 1px solid #3c5248;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.menu-item:hover {
+    background: #385247;
+}
+
+.toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Список сообщений */
+.chat-messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.message-bubble {
+    background: #32473f;
+    border: 1px solid #4a6b5d;
+    border-radius: 8px;
+    padding: 8px 12px;
+    max-width: 85%;
+}
+
+.msg-author {
+    font-size: 10px;
+    color: #72a38e;
+    margin-bottom: 3px;
+    font-weight: bold;
+}
+
+.msg-text {
+    font-size: 13px;
+    word-break: break-word;
+}
+
+/* Панель управления снизу */
+.control-panel {
+    background: #202d28;
+    padding: 10px;
+    border-top: 2px solid #3c5248;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sender-selector select {
+    width: 100%;
+    background: #2b3a35;
+    color: #b1d4c5;
+    border: 1px solid #4a6b5d;
+    padding: 6px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 12px;
+}
+
+.input-row {
+    display: flex;
+    gap: 8px;
+}
+
+.input-row input {
+    flex: 1;
+    background: #1b2622;
+    border: 1px solid #4a6b5d;
+    border-radius: 6px;
+    padding: 8px;
+    color: #fff;
+    font-size: 13px;
+}
+
+.input-row button {
+    background: #416354;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 0 15px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.input-row button:hover {
+    background: #507867;
+}
