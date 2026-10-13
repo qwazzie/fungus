@@ -1,3 +1,10 @@
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+img { max-width: 100%; }
+
+/* Layout: окно портативной консоли. Слева белая колонка с иконками, справа серая полосатая
+   рабочая область, внизу чёрные и серые «таблетки» с белыми ярлыками. Сообщения и черновик
+   лежат на бумаге в линейку с цветным ярлыком имени. Одна тема, светлая оболочка. */
 :root {
   --shell: #e3e3e3;
   --frame: #242424;
@@ -16,13 +23,9 @@
   --l: #d6dcf0;
   --pixel: 'Pixelify Sans', 'VT323', 'Courier New', ui-monospace, monospace;
   --head: 'Russo One', 'Arial Black', 'Helvetica Neue', sans-serif;
-  color-scheme: light;
-  box-sizing: border-box;
 }
 
-*, *:before, *:after { box-sizing: inherit; }
-
-html, body { height: 100%; margin: 0; padding: 0; }
+html, body { height: 100%; }
 body {
   background: #2b2b2d;
   color: var(--ink);
@@ -43,22 +46,23 @@ button { font: inherit; color: inherit; }
   overflow: hidden;
 }
 @media (min-width: 520px) {
-  .stage { padding: 20px; }
+  .stage { padding: 20px; box-sizing: border-box; }
   .phone { border: 4px solid #111; border-radius: 34px; box-shadow: 0 18px 50px rgba(0,0,0,.5); }
 }
 
 .screen {
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
-  padding: 14px 16px 16px;
+  box-sizing: border-box; padding: 14px 16px 16px;
   background: var(--shell);
   min-width: 0;
 }
 .screen:not([hidden]) { animation: enter .16s ease-out; }
 @keyframes enter { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }
-
+@media (prefers-reduced-motion: reduce) { .screen:not([hidden]) { animation: none; } }
 .col { flex: 1; min-height: 0; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
 
+/* Окно: колонка с иконками + рабочая область */
 .win {
   flex: 1; min-height: 0; min-width: 0;
   display: flex;
@@ -68,7 +72,7 @@ button { font: inherit; color: inherit; }
   overflow: hidden;
 }
 .gut {
-  flex: none; width: 56px;
+  flex: none; width: 56px; box-sizing: border-box;
   display: flex; flex-direction: column; align-items: center; gap: 8px;
   padding: 8px 0;
   background: var(--gutter);
@@ -84,14 +88,15 @@ button { font: inherit; color: inherit; }
 .main {
   position: relative; flex: 1; min-width: 0;
   display: flex; flex-direction: column;
-  padding: 12px 12px 14px;
+  box-sizing: border-box; padding: 12px 12px 14px;
   background-color: var(--stripe-a);
   background-image: repeating-linear-gradient(to bottom, var(--stripe-a) 0, var(--stripe-a) 4px, var(--stripe-b) 4px, var(--stripe-b) 6px);
 }
 svg.i { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: square; stroke-linejoin: miter; shape-rendering: crispEdges; }
 
+/* Белые ярлыки заголовков */
 .wtag {
-  flex: none; align-self: flex-start; max-width: 100%;
+  flex: none; align-self: flex-start; max-width: 100%; box-sizing: border-box;
   padding: 5px 12px 4px; margin-bottom: 12px;
   background: #fff; color: #000;
   font: 400 20px/1.2 var(--head);
@@ -103,8 +108,9 @@ svg.i { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-widt
 .err { align-self: flex-start; margin: 0; padding: 4px 10px; background: #fff; color: #000; font-size: 16px; font-weight: 600; }
 .err:empty { display: none; }
 
+/* Таблетки */
 .pill {
-  position: relative; width: 100%; min-width: 0;
+  position: relative; box-sizing: border-box; width: 100%; min-width: 0;
   display: flex; align-items: center; gap: 10px;
   min-height: 66px; padding: 20px 10px 8px 14px;
   background: var(--pb, var(--pill-black)); color: #fff;
@@ -117,7 +123,7 @@ svg.i { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-widt
 button.pill { cursor: pointer; }
 button.pill:active { filter: brightness(1.5); }
 .ptag {
-  position: absolute; left: 16px; top: -11px; max-width: calc(100% - 32px);
+  position: absolute; left: 16px; top: -11px; max-width: calc(100% - 32px); box-sizing: border-box;
   padding: 3px 10px 2px; background: #fff; color: #000;
   font: 400 17px/1.2 var(--head);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -131,7 +137,7 @@ button.pill:active { filter: brightness(1.5); }
 .chip:active { background: #000; color: #fff; border-color: #fff; }
 .chip svg.i { width: 20px; height: 20px; }
 .badge {
-  flex: none; width: 28px; height: 28px; display: grid; place-items: center;
+  flex: none; width: 28px; height: 28px; box-sizing: border-box; display: grid; place-items: center;
   background: #000; color: #fff; border: 3px solid var(--accent); border-radius: 3px;
   font: 600 16px/1 var(--pixel); text-transform: uppercase;
 }
@@ -143,19 +149,20 @@ button.pill:active { filter: brightness(1.5); }
 .whobtn svg.i { width: 16px; height: 16px; flex: none; stroke-width: 4; }
 .whobtn[aria-expanded="true"] svg.i { transform: rotate(180deg); }
 .pill input {
-  flex: 1; min-width: 0; height: 40px; padding: 0 2px;
+  flex: 1; min-width: 0; height: 40px; box-sizing: border-box; padding: 0 2px;
   background: none; border: 0; border-radius: 0; color: #fff; font: 400 20px var(--pixel);
 }
 .pill input::placeholder { color: rgba(255,255,255,.72); opacity: 1; }
 .pill input:focus-visible { outline: none; box-shadow: 0 3px 0 var(--accent); }
 
+/* Бумага в линейку с ярлыком */
 .paper {
   position: relative; background: var(--paper);
   border: 3px solid var(--b); border-radius: 12px;
   box-shadow: 2px 2px 0 rgba(0,0,0,.25);
 }
 .ntag {
-  position: absolute; top: -3px; left: -3px; max-width: calc(100% - 24px);
+  position: absolute; top: -3px; left: -3px; max-width: calc(100% - 24px); box-sizing: border-box;
   padding: 4px 14px 3px 10px;
   background: var(--f); color: var(--b);
   border: 3px solid var(--b); border-radius: 11px 0 10px 0;
@@ -179,12 +186,13 @@ button.pill:active { filter: brightness(1.5); }
 .card:active { filter: brightness(.94); }
 .msg { width: 94%; flex: none; }
 
+/* Чат: черновик */
 .sheet {
   flex: none; padding: 8px; background: #cfcfcf;
   border: 4px solid #8f8f8f; border-radius: 14px; box-shadow: 3px 3px 0 #7d7d7d;
 }
 .draft textarea {
-  display: block; width: 100%; height: 92px; margin: 0; padding: 36px 12px 8px;
+  display: block; width: 100%; box-sizing: border-box; height: 92px; margin: 0; padding: 36px 12px 8px;
   border: 0; border-radius: 9px; resize: none;
   background-color: transparent; color: var(--text); font: 400 18px/24px var(--pixel);
   background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 23px, var(--l) 23px, var(--l) 24px);
@@ -192,6 +200,7 @@ button.pill:active { filter: brightness(1.5); }
 }
 .draft textarea::placeholder { color: #8a90b0; opacity: 1; }
 .draft textarea:focus-visible { outline: none; }
+.draft:focus-within { box-shadow: 0 0 0 3px #ff9d00; }
 
 .drop {
   position: absolute; left: 12px; bottom: 96px; z-index: 5;
@@ -200,7 +209,9 @@ button.pill:active { filter: brightness(1.5); }
 }
 .drop .pill { cursor: pointer; }
 .drop .pill[aria-selected="true"] { box-shadow: inset 0 0 0 2px #fff, 0 0 0 3px var(--accent); }
+.drop .none { margin: 0; padding: 8px 10px; background: #fff; color: #000; font-size: 16px; }
 
+/* Прокручиваемые страницы */
 .scroll { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding: 2px 4px 14px; }
 .photo { display: flex; align-items: center; gap: 14px; }
 .avatar {
@@ -218,3 +229,8 @@ button.pill:active { filter: brightness(1.5); }
 }
 .bevel:active { background: #111; color: #fff; }
 .names { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.names .none { padding: 5px 10px; background: #fff; color: #000; font-size: 16px; align-self: flex-start; }
+.lead { margin: 0; }
+.lead + .lead { margin-top: 0; }
+
+@supports (height: 100dvh) { html, body { height: 100dvh; } }

@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Грибофон — Лор-чат</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&family=Russo+One&family=VT323&display=swap">
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Грибофон</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&family=Russo+One&family=VT323&display=swap">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -66,7 +66,11 @@
             <p class="wsub">о приложении</p>
             <div class="paper">
               <span class="ntag">что это</span>
-              <div class="body">Приватный мессенджер Грибофон. Выберите персонажа и общайтесь в реальном времени с поддержкой лора!</div>
+              <div class="body">Чат для историй по лору. Выберите, от чьего имени пишете, и добавляйте реплики в нужный чат.</div>
+            </div>
+            <div class="paper" style="--b:#a8386a;--f:#f1cadd;--l:#f0d6e3">
+              <span class="ntag">макет</span>
+              <div class="body">Это кликабельный макет. Чаты и тексты в нём примерные и не сохраняются.</div>
             </div>
           </div>
         </div>
@@ -93,6 +97,7 @@
                   <button class="bevel" id="pickPhoto" type="button">Загрузить фото</button>
                   <button class="bevel" id="clearPhoto" type="button" hidden>Убрать</button>
                 </div>
+                <p class="wnote">Только в макете. В приложении этого не будет.</p>
               </div>
               <input type="file" id="photoFile" accept="image/*" hidden>
             </div>
@@ -101,7 +106,7 @@
             <ul class="names" id="namesList"></ul>
             <form class="pill grey" id="addName" autocomplete="off" style="margin-top:8px">
               <span class="ptag">новое имя</span>
-              <input id="newName" type="text" maxlength="24" placeholder="Имя персонажа" aria-label="Имя нового персонажа">
+              <input id="newName" type="text" maxlength="24" placeholder="Имя персонажа" aria-label="Имя нового персонажа" enterkeyhint="done">
               <button class="chip" type="submit" aria-label="Добавить персонажа">
                 <svg class="i" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16"/></svg>
               </button>
@@ -151,8 +156,7 @@
   </main>
 </div>
 
-<!-- Подключаем Socket.io сервер и клиентский скрипт -->
-<script src="/socket.io/socket.io.js"></script>
-<script src="script.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
