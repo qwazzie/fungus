@@ -9,13 +9,30 @@
 </head>
 <body>
   <div class="phone">
-    <!-- Список чатов -->
-    <section id="s-list" class="screen">
+    <!-- Экран авторизации -->
+    <section id="s-auth" class="screen">
       <header class="topbar">
-        <h1 class="title">ГРИБОФОН</h1>
+        <h1 class="title">ВХОД В ГРИБОФОН</h1>
+      </header>
+      <div class="content auth-box">
+        <div class="paper card" style="align-items: center; text-align: center;">
+          <p class="body" style="margin-bottom: 12px;">Введите свое имя персонажа и пароль для доступа к секретной связи.</p>
+          <form id="authForm" style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+            <input type="text" id="authName" placeholder="Имя (например, РИН 🍄)" maxlength="24" required autocomplete="off">
+            <input type="password" id="authPass" placeholder="Секретный пароль" required autocomplete="off">
+            <button type="submit" class="chip" style="justify-content: center;">Войти / Создать</button>
+            <p id="authErr" class="err"></p>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Список чатов -->
+    <section id="s-list" class="screen" hidden>
+      <header class="topbar">
+        <h1 class="title" id="myAccountTitle">ГРИБОФОН</h1>
         <div class="actions">
           <button id="newChat" class="chip" title="Новый чат">+</button>
-          <button id="openProfile" class="chip" title="Профиль">⚙</button>
         </div>
       </header>
       <div id="chatList" class="content"></div>
@@ -30,7 +47,7 @@
       <div id="msgs" class="content"></div>
 
       <form id="composer" class="composer">
-        <div id="who" class="pill" aria-expanded="false">
+        <div class="pill" style="cursor: default;">
           <span id="whoBadge" class="badge">?</span>
           <span id="whoName" class="nm">Имя</span>
         </div>
@@ -39,33 +56,18 @@
       </form>
     </section>
 
-    <!-- Выпадающее меню выбора персонажа -->
-    <div id="drop" class="dropdown" hidden></div>
-
-    <!-- Экран профиля / персонажей -->
+    <!-- Экран профиля / смены аккаунта -->
     <section id="s-profile" class="screen" hidden>
       <header class="topbar">
         <button class="chip" data-back>← Назад</button>
-        <h2 class="title">Персонажи</h2>
+        <h2 class="title">Профиль</h2>
       </header>
       <div class="content">
-        <div class="card paper">
-          <div id="avatar" class="avatar-box"></div>
-          <button id="pickPhoto" class="pill mini">Выбрать фото</button>
-          <button id="clearPhoto" class="pill mini" hidden>Убрать фото</button>
-          <input type="file" id="photoFile" accept="image/*" hidden>
-        </div>
-        <form id="addName" class="row">
-          <input type="text" id="newName" placeholder="Имя нового персонажа..." maxlength="24" autocomplete="off">
-          <button type="submit" class="chip">Добавить</button>
-        </form>
-        <p id="nameErr" class="err"></p>
-        <ul id="namesList" class="list"></ul>
+        <button id="logoutBtn" class="chip" style="width: 100%; justify-content: center; background: #f8d7da;">Сменить аккаунт</button>
       </div>
     </section>
   </div>
 
-  <!-- Подключаем Socket.io соединенный с сервером -->
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
 </body>
