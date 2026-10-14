@@ -205,9 +205,7 @@
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDrop(); });
 
-  // Находим элементы отправки
-  var sendBtn = $('#sendBtn') || document.querySelector('button[type="submit"]');
-
+  // Отправка сообщения через форму
   function sendMessage() {
     if (!input) return;
     var t = input.value.trim();
@@ -233,33 +231,19 @@
       sendMessage();
     });
   }
-
   if (input) {
     input.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' && !e.shiftKey) {
+      if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
         e.preventDefault();
         sendMessage();
       }
     });
   }
 
-  var composer = $('#composer');
-  if (composer) {
-    composer.addEventListener('submit', function (e) { e.preventDefault(); sendMessage(); });
-  }
-  if (input) {
-    input.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); sendMessage(); }
-    });
-  }
-
   // ---------- ПОЛУЧЕНИЕ ИСТОРИИ И СООБЩЕНИЙ С СЕРВЕРА ----------
 
-  // 1. Загрузка всей истории из базы данных при входе
   socket.on('init history', function (history) {
     if (!Array.isArray(history)) return;
-
-    // Очищаем старые сообщения главного чата, чтобы заполнить из базы
     var mainChat = findChat(MAIN_ID);
     if (mainChat) mainChat.msgs = [];
 
@@ -286,8 +270,8 @@
     renderList();
   });
 
-  // 2. Получение нового сообщения в реальном времени
   socket.on('chat message', function (data) {
+    console.log("Получено от сервера:", data);
     if (!data || (typeof data.text !== 'string' && typeof data.t !== 'string')) return;
     var textVal = data.text || data.t;
     var senderVal = data.sender || data.n || '?';
