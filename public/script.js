@@ -1,6 +1,4 @@
-// Грибофон: клиент. Сервер остаётся прежним: получает 'chat message' и рассылает всем.
-// К сообщению добавлены поля chat (id чата) и title (его название). Сообщения без chat
-// попадают в чат «Грибоника», так что старый формат { sender, text } тоже работает.
+// Грибофон: клиент. Поддерживает историю из базы данных и синхронизацию через WebSocket.
 (function () {
   'use strict';
 
@@ -13,7 +11,7 @@
   var MAX_TITLE = 40;
   var MAX_STORED = 300;
 
-  var DEFAULT_NAMES = ['РИН', 'КВАС', 'КИРОСИН', 'МАФ', 'БАРАБАН', 'НИЯ'];
+  var DEFAULT_NAMES = ['РИН 🍄', 'КВАС 💧', 'КИРОСИН 🔥', 'МАФ 🌿', 'БАРАБАН 🥁', 'НИЯ 🍄'];
   var HUES = [
     { b: '#3b4ca6', f: '#c8d2f0', l: '#d6dcf0' },
     { b: '#a8386a', f: '#f1cadd', l: '#f0d6e3' },
@@ -30,9 +28,9 @@
       who: DEFAULT_NAMES[0],
       counter: 0,
       chats: [{
-        id: MAIN_ID, title: 'Грибоника', msgs: [
-          { n: 'РИН', t: 'Пий зи спяшь отс рин' },
-          { n: 'КВАС', t: 'Это. Бакий ян, всоди кали флы?' }
+        id: MAIN_ID, title: 'ГРИБОНИКА ОБЩИЙ', msgs: [
+          { n: 'РИН 🍄', t: 'Пий зи спяшь отс рин' },
+          { n: 'КВАС 💧', t: 'Это. Бакий ян, всоди кали флы?' }
         ]
       }]
     };
@@ -117,15 +115,16 @@
 
   function showOnly(name) {
     closeDrop();
-    Object.keys(screens).forEach(function (k) { screens[k].hidden = (k !== name); });
+    Object.keys(screens).forEach(function (k) { if (screens[k]) screens[k].hidden = (k !== name); });
   }
   function go(name) { stack.push(name); showOnly(name); }
-  function back() { if (stack.length > 1) stack.pop(); showOnly(stack[stack.length - 1]); }
+  function back() { if (stack.length > 1) { stack.pop(); showOnly(stack[stack.length - 1]); } }
   function chatIsOpen() { return !!cur && stack[stack.length - 1] === 'chat'; }
 
   // ---------- список чатов ----------
   function renderList() {
     var box = $('#chatList');
+    if (!box) return;
     box.textContent = '';
     if (!state.chats.length) { box.appendChild(el('p', 'wnote', 'Чатов пока нет. Нажмите «+», чтобы начать.')); return; }
     state.chats.forEach(function (c) {
@@ -141,6 +140,7 @@
 
   // ---------- чат ----------
   function renderMsgs() {
+    if (!msgsEl) return;
     msgsEl.textContent = '';
     if (!cur.msgs.length) {
       msgsEl.appendChild(el('p', 'wnote', 'Сообщений пока нет. Выберите имя и напишите первую реплику.'));
@@ -158,20 +158,21 @@
 
   function openChat(c) {
     cur = c;
-    $('#chatTitle').textContent = c.title;
+    if ($('#chatTitle')) $('#chatTitle').textContent = c.title;
     go('chat');
     renderMsgs();
   }
 
   function updateWho() {
     var w = state.who;
-    $('#whoName').textContent = w || 'Имя';
-    $('#whoBadge').textContent = w ? w.charAt(0) : '?';
-    $('#draftTag').textContent = w || 'Имя';
+    if ($('#whoName')) $('#whoName').textContent = w || 'Имя';
+    if ($('#whoBadge')) $('#whoBadge').textContent = w ? w.charAt(0) : '?';
+    if ($('#draftTag')) $('#draftTag').textContent = w || 'Имя';
     paint($('#draft'), w);
   }
 
   function renderDrop() {
+    if (!drop) return;
     drop.textContent = '';
     if (!state.names.length) {
       drop.appendChild(el('p', 'none', 'Список пуст. Добавьте персонажей в настройках профиля.'));
@@ -183,26 +184,34 @@
       b.setAttribute('aria-selected', n === state.who ? 'true' : 'false');
       b.appendChild(el('span', 'badge', n.charAt(0)));
       b.appendChild(el('span', 'nm', n));
-      b.addEventListener('click', function () {
-        state.who = n; save(); updateWho(); closeDrop(); input.focus();
+      b.addEventListener('click', function (e) {
+        e.stopPropagation();
+        state.who = n; save(); updateWho(); closeDrop(); if (input) input.focus();
       });
       drop.appendChild(b);
     });
   }
-  function openDrop() { renderDrop(); drop.hidden = false; whoBtn.setAttribute('aria-expanded', 'true'); }
-  function closeDrop() { drop.hidden = true; whoBtn.setAttribute('aria-expanded', 'false'); }
+  function openDrop() { renderDrop(); if (drop) drop.hidden = false; if (whoBtn) whoBtn.setAttribute('aria-expanded', 'true'); }
+  function closeDrop() { if (drop) drop.hidden = true; if (whoBtn) whoBtn.setAttribute('aria-expanded', 'false'); }
 
-  whoBtn.addEventListener('click', function () { if (drop.hidden) openDrop(); else closeDrop(); });
+  if (whoBtn) {
+    whoBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (drop && drop.hidden) openDrop(); else closeDrop();
+    });
+  }
   document.addEventListener('click', function (e) {
-    if (!drop.hidden && !e.target.closest('#drop') && !e.target.closest('#who')) closeDrop();
+    if (drop && !drop.hidden && !e.target.closest('#drop') && !e.target.closest('#who')) closeDrop();
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDrop(); });
 
-  // Отправка: сообщение уходит на сервер и появляется, когда сервер вернёт его всем
+  // Отправка: сообщение уходит на сервер
   function sendMessage() {
+    if (!input) return;
     var t = input.value.trim();
     if (!t || !cur) return;
     if (!state.who) { openDrop(); return; }
+
     socket.emit('chat message', {
       chat: cur.id,
       title: cur.title,
@@ -212,14 +221,56 @@
     input.value = '';
     input.focus();
   }
-  $('#composer').addEventListener('submit', function (e) { e.preventDefault(); sendMessage(); });
-  input.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); sendMessage(); }
+
+  var composer = $('#composer');
+  if (composer) {
+    composer.addEventListener('submit', function (e) { e.preventDefault(); sendMessage(); });
+  }
+  if (input) {
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); sendMessage(); }
+    });
+  }
+
+  // ---------- ПОЛУЧЕНИЕ ИСТОРИИ И СООБЩЕНИЙ С СЕРВЕРА ----------
+
+  // 1. Загрузка всей истории из базы данных при входе
+  socket.on('init history', function (history) {
+    if (!Array.isArray(history)) return;
+
+    // Очищаем старые сообщения главного чата, чтобы заполнить из базы
+    var mainChat = findChat(MAIN_ID);
+    if (mainChat) mainChat.msgs = [];
+
+    history.forEach(function (item) {
+      var chatId = (typeof item.chat === 'string' && item.chat) ? item.chat : MAIN_ID;
+      var chatTitle = (typeof item.title === 'string' && item.title) ? item.title : 'ГРИБОНИКА ОБЩИЙ';
+      var sender = item.sender || item.n || '?';
+      var text = item.text || item.t || '';
+
+      var c = findChat(chatId);
+      if (!c) {
+        c = { id: chatId, title: chatTitle, msgs: [] };
+        state.chats.push(c);
+      }
+      c.msgs.push({
+        n: String(sender).slice(0, MAX_NAME),
+        t: String(text).slice(0, MAX_TEXT)
+      });
+    });
+
+    save();
+    if (!cur) cur = state.chats[0];
+    renderMsgs();
+    renderList();
   });
 
-  // Получение сообщения от сервера (в том числе своего)
+  // 2. Получение нового сообщения в реальном времени
   socket.on('chat message', function (data) {
-    if (!data || typeof data.text !== 'string') return;
+    if (!data || (typeof data.text !== 'string' && typeof data.t !== 'string')) return;
+    var textVal = data.text || data.t;
+    var senderVal = data.sender || data.n || '?';
+
     var id = (typeof data.chat === 'string' && data.chat) ? data.chat.slice(0, 40) : MAIN_ID;
     var c = findChat(id);
     if (!c) {
@@ -228,30 +279,34 @@
       state.chats.push(c);
     }
     c.msgs.push({
-      n: String(data.sender == null ? '?' : data.sender).slice(0, MAX_NAME),
-      t: data.text.slice(0, MAX_TEXT)
+      n: String(senderVal).slice(0, MAX_NAME),
+      t: String(textVal).slice(0, MAX_TEXT)
     });
     if (c.msgs.length > MAX_STORED) c.msgs.splice(0, c.msgs.length - MAX_STORED);
-    // чат с новым сообщением уходит в конец списка (внизу самые свежие)
+
     state.chats.splice(state.chats.indexOf(c), 1);
     state.chats.push(c);
     save();
+
     if (chatIsOpen() && cur.id === c.id) renderMsgs();
     renderList();
   });
 
   // ---------- кнопки ----------
-  $('#newChat').addEventListener('click', function () {
-    state.counter += 1;
-    var c = { id: newId(), title: 'Новый чат ' + state.counter, msgs: [] };
-    state.chats.push(c);
-    save();
-    renderList();
-    openChat(c);
-  });
-  $('#openSettings').addEventListener('click', function () { go('settings'); });
-  $('#openInfo').addEventListener('click', function () { go('info'); });
-  $('#openProfile').addEventListener('click', function () { renderProfile(); go('profile'); });
+  var newChatBtn = $('#newChat');
+  if (newChatBtn) {
+    newChatBtn.addEventListener('click', function () {
+      state.counter += 1;
+      var c = { id: newId(), title: 'Новый чат ' + state.counter, msgs: [] };
+      state.chats.push(c);
+      save();
+      renderList();
+      openChat(c);
+    });
+  }
+  if ($('#openSettings')) $('#openSettings').addEventListener('click', function () { go('settings'); });
+  if ($('#openInfo')) $('#openInfo').addEventListener('click', function () { go('info'); });
+  if ($('#openProfile')) $('#openProfile').addEventListener('click', function () { renderProfile(); go('profile'); });
   document.querySelectorAll('[data-back]').forEach(function (b) { b.addEventListener('click', back); });
 
   // ---------- настройки профиля: фото и персонажи ----------
@@ -259,6 +314,7 @@
 
   function renderProfile() {
     var av = $('#avatar');
+    if (!av) return;
     av.textContent = '';
     if (photo) {
       var im = document.createElement('img');
@@ -267,9 +323,11 @@
     } else {
       av.innerHTML = '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>';
     }
-    $('#clearPhoto').hidden = !photo;
+    var clearPhotoBtn = $('#clearPhoto');
+    if (clearPhotoBtn) clearPhotoBtn.hidden = !photo;
 
     var ul = $('#namesList');
+    if (!ul) return;
     ul.textContent = '';
     if (!state.names.length) ul.appendChild(el('li', 'none', 'Пока ни одного персонажа.'));
     state.names.forEach(function (n, i) {
@@ -289,39 +347,53 @@
     var n = state.names.splice(i, 1)[0];
     if (state.who === n) { state.who = state.names[0] || null; updateWho(); }
     save();
-    errEl.textContent = '';
+    if (errEl) errEl.textContent = '';
     renderProfile();
   }
 
-  $('#addName').addEventListener('submit', function (e) {
-    e.preventDefault();
-    var v = newName.value.replace(/\s+/g, ' ').trim();
-    if (!v) return;
-    var dup = state.names.some(function (n) { return n.toLowerCase() === v.toLowerCase(); });
-    if (dup) { errEl.textContent = 'Такой персонаж уже есть.'; return; }
-    errEl.textContent = '';
-    state.names.push(v);
-    if (!state.who) { state.who = v; updateWho(); }
-    save();
-    newName.value = '';
-    renderProfile();
-    newName.focus();
-  });
-  newName.addEventListener('input', function () { errEl.textContent = ''; });
+  var addNameForm = $('#addName');
+  if (addNameForm) {
+    addNameForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (!newName) return;
+      var v = newName.value.replace(/\s+/g, ' ').trim();
+      if (!v) return;
+      var dup = state.names.some(function (n) { return n.toLowerCase() === v.toLowerCase(); });
+      if (dup) { if (errEl) errEl.textContent = 'Такой персонаж уже есть.'; return; }
+      if (errEl) errEl.textContent = '';
+      state.names.push(v);
+      if (!state.who) { state.who = v; updateWho(); }
+      save();
+      newName.value = '';
+      renderProfile();
+      newName.focus();
+    });
+  }
+  if (newName && errEl) {
+    newName.addEventListener('input', function () { errEl.textContent = ''; });
+  }
 
-  $('#pickPhoto').addEventListener('click', function () { $('#photoFile').click(); });
-  $('#photoFile').addEventListener('change', function () {
-    var f = this.files && this.files[0];
-    this.value = '';
-    if (!f || f.type.indexOf('image/') !== 0) return;
-    var r = new FileReader();
-    r.onload = function () { photo = r.result; renderProfile(); };
-    r.readAsDataURL(f);
-  });
-  $('#clearPhoto').addEventListener('click', function () { photo = null; renderProfile(); });
+  if ($('#pickPhoto')) {
+    $('#pickPhoto').addEventListener('click', function () { if ($('#photoFile')) $('#photoFile').click(); });
+  }
+  if ($('#photoFile')) {
+    $('#photoFile').addEventListener('change', function () {
+      var f = this.files && this.files[0];
+      this.value = '';
+      if (!f || f.type.indexOf('image/') !== 0) return;
+      var r = new FileReader();
+      r.onload = function () { photo = r.result; renderProfile(); };
+      r.readAsDataURL(f);
+    });
+  }
+  if ($('#clearPhoto')) {
+    $('#clearPhoto').addEventListener('click', function () { photo = null; renderProfile(); });
+  }
 
   // ---------- старт ----------
   updateWho();
   renderProfile();
+  if (!cur) cur = state.chats[0];
+  renderMsgs();
   renderList();
 })();
