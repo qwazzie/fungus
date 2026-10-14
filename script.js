@@ -205,7 +205,9 @@
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDrop(); });
 
-  // Отправка: сообщение уходит на сервер
+  // Находим элементы отправки
+  var sendBtn = $('#sendBtn') || document.querySelector('button[type="submit"]');
+
   function sendMessage() {
     if (!input) return;
     var t = input.value.trim();
@@ -224,33 +226,22 @@
     input.focus();
   }
 
-  // Получение сообщения в реальном времени
-  socket.on('chat message', function (data) {
-    console.log("Получено от сервера:", data);
-    if (!data || (typeof data.text !== 'string' && typeof data.t !== 'string')) return;
-    var textVal = data.text || data.t;
-    var senderVal = data.sender || data.n || '?';
-
-    var id = (typeof data.chat === 'string' && data.chat) ? data.chat.slice(0, 40) : MAIN_ID;
-    var c = findChat(id);
-    if (!c) {
-      var title = typeof data.title === 'string' && data.title.trim() ? data.title.trim().slice(0, MAX_TITLE) : 'Чат';
-      c = { id: id, title: title, msgs: [] };
-      state.chats.push(c);
-    }
-    c.msgs.push({
-      n: String(senderVal).slice(0, MAX_NAME),
-      t: String(textVal).slice(0, MAX_TEXT)
+  var composer = $('#composer');
+  if (composer) {
+    composer.addEventListener('submit', function (e) {
+      e.preventDefault();
+      sendMessage();
     });
-    if (c.msgs.length > MAX_STORED) c.msgs.splice(0, c.msgs.length - MAX_STORED);
+  }
 
-    state.chats.splice(state.chats.indexOf(c), 1);
-    state.chats.push(c);
-    save();
-
-    if (chatIsOpen() && cur.id === c.id) renderMsgs();
-    renderList();
-  });
+  if (input) {
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+  }
 
   var composer = $('#composer');
   if (composer) {
