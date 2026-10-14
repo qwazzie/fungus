@@ -439,13 +439,17 @@
     updateWho();
     stack = ['list'];
     showOnly('list');
+    if (modal) modal.hidden = true; // Гарантированно прячем окно при старте
     if (!cur) cur = state.chats[0];
     renderList();
   }
+
+  if (modal) modal.hidden = true; // Скрываем при загрузке скрипта
 
   if (currentUsername) {
     initApp();
   } else {
     showOnly('auth');
+    if (modal) modal.hidden = true;
   }
 })();

@@ -85,6 +85,7 @@ input:focus { background: #fff; }
   position: absolute; top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0,0,0,0.4); z-index: 1000; display: flex; justify-content: center; align-items: center;
 }
+.modal-overlay[hidden] { display: none !important; }
 .modal-box { width: 85%; max-width: 320px; text-align: center; background: #fff3cd; border: 3px solid var(--text); }
 .modal-title { font-family: 'Russo One', sans-serif; font-size: 1.3rem; margin-bottom: 14px; color: #a020f0; }
 .modal-btns { display: flex; justify-content: center; gap: 16px; }
