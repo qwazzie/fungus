@@ -54,7 +54,7 @@ app.post('/api/auth', async (req, res) => {
     if (user) {
       // Если пользователь существует, проверяем пароль
       if (user.password !== password) {
-        return.status(400).json({ success: false, message: 'Неверный пароль' });
+        return res.status(400).json({ success: false, message: 'Неверный пароль' });
       }
       return res.json({ success: true, username: user.username });
     } else {
