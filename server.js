@@ -7,46 +7,63 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// Раздаем статику
+// Раздаем статику из папки public
 app.use(express.static('public'));
 
-// ПОДКЛЮЧЕНИЕ К БАЗЕ ДАННЫХ (вставь свою строку из MongoDB Atlas вместо ссылки ниже)
-const MONGO_URL = process.env.MONGO_URL || 'mongodb+srv://lololololoh410_db_userlololololoh410_db_user@cluster0.szxmv3r.mongodb.net/?appName=Cluster0';
+// ПОДКЛЮЧЕНИЕ К БАЗЕ ДАННЫХ MONGODB
+const MONGO_URL = process.env.MONGO_URL || '';
 
-mongoose.connect(MONGO_URL)
-  .then(() => console.log('Успешно подключено к базе данных!'))
-  .catch(err => console.error('Ошибка подключения к БД:', err));
+if (MONGO_URL) {
+  mongoose.connect(MONGO_URL)
+    .then(() => console.log('Успешно подключено к MongoDB!'))
+    .catch(err => console.error('Ошибка подключения к MongoDB:', err));
+} else {
+  console.log('Внимание: MONGO_URL не задана, база данных отключена.');
+}
 
 // Схема сообщения для базы данных
 const messageSchema = new mongoose.Schema({
-  n: String, // Автор
-  t: String, // Текст
+  chat: { type: String, default: 'main' },
+  title: { type: String, default: 'ГРИБОНИКА ОБЩИЙ' },
+  sender: String,
+  text: String,
   createdAt: { type: Date, default: Date.now }
 });
 
 const Message = mongoose.model('Message', messageSchema);
 
-// Логика сокетов
+// Логика веб-сокетов
 io.on('connection', async (socket) => {
   console.log('Пользователь на связи:', socket.id);
 
-  // При подключении сразу отправляем историю последних 50 сообщений
+  // При подключении отправляем всю историю сообщений клиенту
   try {
-    const history = await Message.find().sort({ createdAt: 1 }).limit(50);
-    socket.emit('init history', history);
+    if (MONGO_URL) {
+      const history = await Message.find().sort({ createdAt: 1 }).limit(300);
+      socket.emit('init history', history);
+    }
   } catch (err) {
     console.error('Ошибка загрузки истории:', err);
   }
 
-  // Принимаем новое сообщение
+  // Принимаем сообщение от клиента
   socket.on('chat message', async (data) => {
     try {
-      // Сохраняем в базу данных
-      const newMessage = new Message({ n: data.n, t: data.t });
-      await newMessage.save();
+      const chat = data.chat || 'main';
+      const title = data.title || 'ГРИБОНИКА ОБЩИЙ';
+      const sender = data.sender || data.n || 'Аноним';
+      const text = data.text || data.t || '';
 
-      // Рассылаем всем подключенным
-      io.emit('chat message', data);
+      if (!text.trim()) return;
+
+      // Если подключена база — сохраняем туда
+      if (MONGO_URL) {
+        const newMessage = new Message({ chat, title, sender, text });
+        await newMessage.save();
+      }
+
+      // Рассылаем сообщение всем участникам (включая отправителя)
+      io.emit('chat message', { chat, title, sender, text });
     } catch (err) {
       console.error('Ошибка сохранения сообщения:', err);
     }
