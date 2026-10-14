@@ -5,22 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Грибофон</title>
   <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&family=Pixelify+Sans:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="phone">
-    <!-- Экран авторизации -->
+    <!-- Авторизация -->
     <section id="s-auth" class="screen">
-      <header class="topbar">
-        <h1 class="title">ВХОД В ГРИБОФОН</h1>
-      </header>
+      <header class="topbar"><h1 class="title">ВХОД В ГРИБОФОН</h1></header>
       <div class="content auth-box">
         <div class="paper card" style="align-items: center; text-align: center;">
-          <p class="body" style="margin-bottom: 12px;">Введите юзернейм, пароль и публичное имя (например, @sosiskis3 или РИН 🍄).</p>
+          <p class="body" style="margin-bottom: 12px;">Введите логин, пароль и отображаемое имя.</p>
           <form id="authForm" style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
-            <input type="text" id="authUsername" placeholder="Юзернейм (например, sosiskis3)" maxlength="24" required autocomplete="off">
-            <input type="password" id="authPass" placeholder="Секретный пароль" required autocomplete="off">
-            <input type="text" id="authDisplay" placeholder="Публичное имя (@username или роль)" maxlength="24" autocomplete="off">
+            <input type="text" id="authUsername" placeholder="Логин (например, admin)" required autocomplete="off">
+            <input type="password" id="authPass" placeholder="Пароль" required autocomplete="off">
+            <input type="text" id="authDisplay" placeholder="Отображаемое имя (Электробанан)" required autocomplete="off">
             <button type="submit" class="chip" style="justify-content: center;">Войти / Создать</button>
             <p id="authErr" class="err"></p>
           </form>
@@ -37,28 +35,39 @@
           <button id="openProfile" class="chip" title="Профиль">⚙</button>
         </div>
       </header>
+      <div class="action-bar" id="listActions" hidden>
+        <button id="deleteChatsBtn" class="chip danger">Удалить выбранные чаты</button>
+      </div>
       <div id="chatList" class="content"></div>
+      <div class="footer-btn-box">
+        <button id="openProfileBottom" class="chip big-btn">профиль и персонажи</button>
+      </div>
     </section>
 
     <!-- Экран чата -->
     <section id="s-chat" class="screen" hidden>
       <header class="topbar">
         <button class="chip" data-back>← Назад</button>
-        <h2 id="chatTitle" class="title">Чат</h2>
+        <h2 id="chatTitle" class="title" title="Нажмите, чтобы изменить название">Чат</h2>
       </header>
+      <div class="action-bar" id="msgActions" hidden>
+        <button id="deleteMsgsBtn" class="chip danger">Удалить выбранные сообщения</button>
+      </div>
       <div id="msgs" class="content"></div>
 
       <form id="composer" class="composer">
-        <div class="pill" style="cursor: default;">
+        <div id="whoBtn" class="pill" aria-expanded="false" title="Сменить отправителя">
           <span id="whoBadge" class="badge">?</span>
           <span id="whoName" class="nm">Имя</span>
         </div>
         <input type="text" id="text" placeholder="Написать реплику..." autocomplete="off" maxlength="1000">
         <button type="submit" class="chip send">➤</button>
       </form>
+      <!-- Выпадающее меню персонажей -->
+      <div id="drop" class="dropdown" hidden></div>
     </section>
 
-    <!-- Экран профиля -->
+    <!-- Профиль и персонажи -->
     <section id="s-profile" class="screen" hidden>
       <header class="topbar">
         <button class="chip" data-back>← Назад</button>
@@ -66,12 +75,30 @@
       </header>
       <div class="content">
         <div class="paper card">
-          <span class="ntag" id="profileTag">Аккаунт</span>
-          <p id="profileUser" class="body" style="margin-top: 6px;"></p>
+          <span class="ntag">Аккаунт</span>
+          <p id="profileInfo" class="body" style="margin-top: 6px;"></p>
         </div>
-        <button id="logoutBtn" class="chip" style="width: 100%; justify-content: center; background: #f8d7da;">Сменить аккаунт</button>
+        <form id="addName" class="row" style="margin-bottom: 12px;">
+          <input type="text" id="newName" placeholder="Добавить персонажа..." maxlength="24" autocomplete="off">
+          <button type="submit" class="chip">+</button>
+        </form>
+        <ul id="namesList" class="list" style="list-style: none; display: flex; flex-direction: column; gap: 8px;"></ul>
+        <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 8px;">
+          <button id="logoutBtn" class="chip" style="justify-content: center; background: #f8d7da;">Выйти из аккаунта</button>
+        </div>
       </div>
     </section>
+
+    <!-- Модальное окно подтверждения удаления -->
+    <div id="modalConfirm" class="modal-overlay" hidden>
+      <div class="modal-box paper">
+        <h3 class="modal-title">ТОЧНО УДАЛИТЬ?</h3>
+        <div class="modal-btns">
+          <button id="modalYes" class="chip danger">[ ДА ]</button>
+          <button id="modalNo" class="chip">[ НЕТ ]</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
