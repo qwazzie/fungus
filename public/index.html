@@ -1,162 +1,72 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Грибофон</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&family=Russo+One&family=VT323&display=swap">
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Грибофон</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 </head>
 <body>
-
-<div class="stage">
-  <main class="phone">
-
+  <div class="phone">
     <!-- Список чатов -->
-    <section class="screen" id="s-list">
-      <div class="win">
-        <div class="gut">
-          <button class="gi" id="newChat" aria-label="Новый чат" type="button">
-            <svg class="i" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16"/></svg>
-          </button>
-          <div class="dots"></div>
-          <button class="gi" id="openSettings" aria-label="Настройки" type="button">
-            <svg class="i" viewBox="0 0 24 24" style="stroke-width:2.4"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="6.5"/><path d="M19 12h3M16.9 16.9l2.1 2.1M12 19v3M7.1 16.9L5 19M5 12H2M7.1 7.1L5 5M12 5V2M16.9 7.1L19 5"/></svg>
-          </button>
+    <section id="s-list" class="screen">
+      <header class="topbar">
+        <h1 class="title">ГРИБОФОН</h1>
+        <div class="actions">
+          <button id="newChat" class="chip" title="Новый чат">+</button>
+          <button id="openProfile" class="chip" title="Профиль">⚙</button>
         </div>
-        <div class="main">
-          <div class="list" id="chatList"></div>
-          <button class="pill" id="openProfile" type="button">
-            <span class="ptag">настройки профиля</span>
-            <span class="pc">фото и персонажи</span>
-          </button>
-        </div>
-      </div>
+      </header>
+      <div id="chatList" class="content"></div>
     </section>
 
-    <!-- Настройки -->
-    <section class="screen" id="s-settings" hidden>
-      <div class="win">
-        <div class="gut">
-          <button class="gi" data-back aria-label="Назад" type="button">
-            <svg class="i" viewBox="0 0 24 24"><path d="M20 12H5M11 5l-7 7 7 7"/></svg>
-          </button>
-        </div>
-        <div class="main">
-          <h1 class="big">настройки</h1>
-          <button class="pill" id="openInfo" type="button">
-            <span class="ptag">О проекте</span>
-            <span class="pc">о приложении</span>
-          </button>
-        </div>
-      </div>
-    </section>
+    <!-- Экран чата -->
+    <section id="s-chat" class="screen" hidden>
+      <header class="topbar">
+        <button class="chip" data-back>← Назад</button>
+        <h2 id="chatTitle" class="title">Чат</h2>
+      </header>
+      <div id="msgs" class="content"></div>
 
-    <!-- О проекте -->
-    <section class="screen" id="s-info" hidden>
-      <div class="win">
-        <div class="gut">
-          <button class="gi" data-back aria-label="Назад" type="button">
-            <svg class="i" viewBox="0 0 24 24"><path d="M20 12H5M11 5l-7 7 7 7"/></svg>
-          </button>
+      <form id="composer" class="composer">
+        <div id="who" class="pill" aria-expanded="false">
+          <span id="whoBadge" class="badge">?</span>
+          <span id="whoName" class="nm">Имя</span>
         </div>
-        <div class="main">
-          <div class="scroll">
-            <div class="wtag" style="font-size:26px;margin-bottom:0">О проекте</div>
-            <p class="wsub">о приложении</p>
-            <div class="paper">
-              <span class="ntag">что это</span>
-              <div class="body">Чат для историй по лору. Выберите, от чьего имени пишете, и добавляйте реплики в нужный чат.</div>
-            </div>
-            <div class="paper" style="--b:#a8386a;--f:#f1cadd;--l:#f0d6e3">
-              <span class="ntag">макет</span>
-              <div class="body">Это кликабельный макет. Чаты и тексты в нём примерные и не сохраняются.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Настройки профиля -->
-    <section class="screen" id="s-profile" hidden>
-      <div class="win">
-        <div class="gut">
-          <button class="gi" data-back aria-label="Назад" type="button">
-            <svg class="i" viewBox="0 0 24 24"><path d="M20 12H5M11 5l-7 7 7 7"/></svg>
-          </button>
-        </div>
-        <div class="main">
-          <div class="scroll">
-            <div class="wtag" style="font-size:24px;margin-bottom:0">Настройки профиля</div>
-            <p class="wsub">фото и персонажи</p>
-
-            <div class="photo">
-              <div class="avatar" id="avatar"></div>
-              <div class="photo-side">
-                <div class="btns">
-                  <button class="bevel" id="pickPhoto" type="button">Загрузить фото</button>
-                  <button class="bevel" id="clearPhoto" type="button" hidden>Убрать</button>
-                </div>
-                <p class="wnote">Только в макете. В приложении этого не будет.</p>
-              </div>
-              <input type="file" id="photoFile" accept="image/*" hidden>
-            </div>
-
-            <div class="wtag" style="margin:6px 0 0">Персонажи</div>
-            <ul class="names" id="namesList"></ul>
-            <form class="pill grey" id="addName" autocomplete="off" style="margin-top:8px">
-              <span class="ptag">новое имя</span>
-              <input id="newName" type="text" maxlength="24" placeholder="Имя персонажа" aria-label="Имя нового персонажа" enterkeyhint="done">
-              <button class="chip" type="submit" aria-label="Добавить персонажа">
-                <svg class="i" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16"/></svg>
-              </button>
-            </form>
-            <p class="err" id="nameErr" role="status"></p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Чат -->
-    <section class="screen" id="s-chat" hidden>
-      <form class="col" id="composer" autocomplete="off">
-        <div class="win">
-          <div class="gut">
-            <button class="gi" data-back aria-label="Назад" type="button">
-              <svg class="i" viewBox="0 0 24 24"><path d="M20 12H5M11 5l-7 7 7 7"/></svg>
-            </button>
-          </div>
-          <div class="main">
-            <div class="wtag" id="chatTitle"></div>
-            <div class="msgs" id="msgs"></div>
-            <div class="drop" id="drop" role="listbox" aria-label="Кто пишет" hidden></div>
-            <div class="pill">
-              <span class="ptag">ваше имя</span>
-              <button class="whobtn" id="who" type="button" aria-haspopup="listbox" aria-expanded="false">
-                <span class="badge" id="whoBadge"></span>
-                <span>:</span>
-                <span class="nm" id="whoName"></span>
-                <svg class="i" viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg>
-              </button>
-              <button class="chip" type="submit" aria-label="Отправить">
-                <svg class="i" viewBox="0 0 24 24"><path d="M4 12h16M13 5l7 7-7 7"/></svg>
-              </button>
-            </div>
-          </div>
-        </div>
-        <div class="sheet">
-          <div class="paper draft" id="draft">
-            <span class="ntag" id="draftTag"></span>
-            <textarea id="text" rows="2" placeholder="Текст" enterkeyhint="send" aria-label="Текст реплики"></textarea>
-          </div>
-        </div>
+        <input type="text" id="text" placeholder="Написать реплику..." autocomplete="off" maxlength="1000">
+        <button type="submit" class="chip send">➤</button>
       </form>
     </section>
 
-  </main>
-</div>
+    <!-- Выпадающее меню выбора персонажа -->
+    <div id="drop" class="dropdown" hidden></div>
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="script.js"></script>
+    <!-- Экран профиля / персонажей -->
+    <section id="s-profile" class="screen" hidden>
+      <header class="topbar">
+        <button class="chip" data-back>← Назад</button>
+        <h2 class="title">Персонажи</h2>
+      </header>
+      <div class="content">
+        <div class="card paper">
+          <div id="avatar" class="avatar-box"></div>
+          <button id="pickPhoto" class="pill mini">Выбрать фото</button>
+          <button id="clearPhoto" class="pill mini" hidden>Убрать фото</button>
+          <input type="file" id="photoFile" accept="image/*" hidden>
+        </div>
+        <form id="addName" class="row">
+          <input type="text" id="newName" placeholder="Имя нового персонажа..." maxlength="24" autocomplete="off">
+          <button type="submit" class="chip">Добавить</button>
+        </form>
+        <p id="nameErr" class="err"></p>
+        <ul id="namesList" class="list"></ul>
+      </div>
+    </section>
+  </div>
+
+  <!-- Подключаем Socket.io соединенный с сервером -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>

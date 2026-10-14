@@ -2,31 +2,36 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const mongoose = require('mongoose');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
 // Раздаем статику из папки public
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// ПОДКЛЮЧЕНИЕ К БАЗЕ ДАННЫХ MONGODB
-const MONGO_URL = process.env.MONGO_URL || '';
+// Подключение к MongoDB Atlas
+const MONGO_URL = process.env.MONGO_URL;
 
-if (MONGO_URL) {
-  mongoose.connect(MONGO_URL)
-    .then(() => console.log('Успешно подключено к MongoDB!'))
-    .catch(err => console.error('Ошибка подключения к MongoDB:', err));
-} else {
-  console.log('Внимание: MONGO_URL не задана, база данных отключена.');
+if (!MONGO_URL) {
+  console.error('КРИТИЧЕСКАЯ ОШИБКА: Не задана переменная окружения MONGO_URL!');
+  process.exit(1);
 }
 
-// Схема сообщения для базы данных
+mongoose.connect(MONGO_URL)
+  .then(() => console.log('Успешно подключено к MongoDB!'))
+  .catch(err => {
+    console.error('Ошибка подключения к MongoDB:', err);
+    process.exit(1);
+  });
+
+// Схема сообщения в базе данных
 const messageSchema = new mongoose.Schema({
   chat: { type: String, default: 'main' },
   title: { type: String, default: 'ГРИБОНИКА ОБЩИЙ' },
-  sender: String,
-  text: String,
+  sender: { type: String, required: true },
+  text: { type: String, required: true },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -34,47 +39,43 @@ const Message = mongoose.model('Message', messageSchema);
 
 // Логика веб-сокетов
 io.on('connection', async (socket) => {
-  console.log('Пользователь на связи:', socket.id);
+  console.log('Пользователь подключился');
 
-  // При подключении отправляем всю историю сообщений клиенту
   try {
-    if (MONGO_URL) {
-      const history = await Message.find().sort({ createdAt: 1 }).limit(300);
-      socket.emit('init history', history);
-    }
+    // При входе отправляем клиенту всю историю из базы (до 300 сообщений)
+    const history = await Message.find().sort({ createdAt: 1 }).limit(300);
+    socket.emit('init history', history);
   } catch (err) {
-    console.error('Ошибка загрузки истории:', err);
+    console.error('Ошибка при загрузке истории:', err);
   }
 
-  // Принимаем сообщение от клиента
+  // Получение нового сообщения от клиента
   socket.on('chat message', async (data) => {
+    if (!data || !data.text || !data.sender) return;
+
     try {
-      const chat = data.chat || 'main';
-      const title = data.title || 'ГРИБОНИКА ОБЩИЙ';
-      const sender = data.sender || data.n || 'Аноним';
-      const text = data.text || data.t || '';
+      // Сохраняем в базу данных
+      const newMessage = new Message({
+        chat: data.chat || 'main',
+        title: data.title || 'ГРИБОНИКА ОБЩИЙ',
+        sender: data.sender,
+        text: data.text
+      });
+      await newMessage.save();
 
-      if (!text.trim()) return;
-
-      // Если подключена база — сохраняем туда
-      if (MONGO_URL) {
-        const newMessage = new Message({ chat, title, sender, text });
-        await newMessage.save();
-      }
-
-      // Рассылаем сообщение всем участникам (включая отправителя)
-      io.emit('chat message', { chat, title, sender, text });
+      // Рассылаем всем подключенным пользователям
+      io.emit('chat message', newMessage);
     } catch (err) {
-      console.error('Ошибка сохранения сообщения:', err);
+      console.error('Ошибка при сохранении сообщения:', err);
     }
   });
 
   socket.on('disconnect', () => {
-    console.log('Пользователь отключился:', socket.id);
+    console.log('Пользователь отключился');
   });
 });
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`Грибофон запущен на порту ${PORT}`);
+  console.log(`Сервер запущен на порту ${PORT}`);
 });
