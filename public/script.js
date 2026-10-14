@@ -3,7 +3,8 @@
 
   var socket = io();
 
-  var STORE_KEY = 'gribofon.user.v1';
+  var STORE_USER = 'gribofon.username.v1';
+  var STORE_DISPLAY = 'gribofon.display.v1';
   var MAIN_ID = 'main';
   var MAX_TEXT = 1000;
   var MAX_STORED = 300;
@@ -14,7 +15,9 @@
     { b: '#6a3aa6', f: '#dcccf0' }, { b: '#1d7f87', f: '#c6e8ea' }
   ];
 
-  var currentUser = localStorage.getItem(STORE_KEY) || null;
+  var currentUsername = localStorage.getItem(STORE_USER) || null;
+  var currentDisplay = localStorage.getItem(STORE_DISPLAY) || null;
+
   var state = {
     counter: 0,
     chats: [{ id: MAIN_ID, title: 'ГРИБОНИКА ОБЩИЙ', msgs: [] }]
@@ -69,21 +72,24 @@
   if (authForm) {
     authForm.addEventListener('submit', async function (e) {
       e.preventDefault();
-      var name = $('#authName').value.trim();
+      var uname = $('#authUsername').value.trim();
       var pass = $('#authPass').value.trim();
-      if (!name || !pass) return;
+      var dname = $('#authDisplay').value.trim();
+      if (!uname || !pass) return;
 
       try {
         var res = await fetch('/api/auth', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: name, password: pass })
+          body: JSON.stringify({ username: uname, password: pass, displayName: dname })
         });
         var data = await res.json();
 
         if (data.success) {
-          currentUser = data.username;
-          localStorage.setItem(STORE_KEY, currentUser);
+          currentUsername = data.username;
+          currentDisplay = data.displayName;
+          localStorage.setItem(STORE_USER, currentUsername);
+          localStorage.setItem(STORE_DISPLAY, currentDisplay);
           initApp();
         } else {
           authErr.textContent = data.message || 'Ошибка входа';
@@ -95,8 +101,10 @@
   }
 
   function updateWho() {
-    if ($('#whoName')) $('#whoName').textContent = currentUser || 'Имя';
-    if ($('#whoBadge')) $('#whoBadge').textContent = currentUser ? currentUser.charAt(0) : '?';
+    var nameToUse = currentDisplay || ('@' + currentUsername);
+    if ($('#whoName')) $('#whoName').textContent = nameToUse;
+    if ($('#whoBadge')) $('#whoBadge').textContent = nameToUse ? nameToUse.charAt(0) : '?';
+    if ($('#profileUser')) $('#profileUser').textContent = 'Логин: @' + currentUsername + '\nИмя: ' + nameToUse;
   }
 
   function renderList() {
@@ -137,19 +145,21 @@
     renderMsgs();
   }
 
-  // Отправка сообщения
+  // Отправка сообщения под публичным именем
   var composer = $('#composer');
   if (composer) {
     composer.addEventListener('submit', function (e) {
       e.preventDefault();
       if (!input) return;
       var t = input.value.trim();
-      if (!t || !cur || !currentUser) return;
+      if (!t || !cur || !currentUsername) return;
+
+      var senderName = currentDisplay || ('@' + currentUsername);
 
       socket.emit('chat message', {
         chat: cur.id,
         title: cur.title,
-        sender: currentUser,
+        sender: senderName,
         text: t.slice(0, MAX_TEXT)
       });
       input.value = '';
@@ -173,7 +183,7 @@
     });
 
     if (!cur) cur = state.chats[0];
-    if (currentUser) {
+    if (currentUsername) {
       renderMsgs();
       renderList();
     }
@@ -194,7 +204,6 @@
     renderList();
   });
 
-  // Навигация
   var newChatBtn = $('#newChat');
   if (newChatBtn) {
     newChatBtn.addEventListener('click', function () {
@@ -205,13 +214,16 @@
       openChat(c);
     });
   }
+  if ($('#openProfile')) $('#openProfile').addEventListener('click', function () { go('profile'); });
   document.querySelectorAll('[data-back]').forEach(function (b) { b.addEventListener('click', back); });
 
   var logoutBtn = $('#logoutBtn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', function () {
-      localStorage.removeItem(STORE_KEY);
-      currentUser = null;
+      localStorage.removeItem(STORE_USER);
+      localStorage.removeItem(STORE_DISPLAY);
+      currentUsername = null;
+      currentDisplay = null;
       stack = ['auth'];
       showOnly('auth');
     });
@@ -226,8 +238,7 @@
     renderList();
   }
 
-  // Старт при загрузке
-  if (currentUser) {
+  if (currentUsername) {
     initApp();
   } else {
     showOnly('auth');

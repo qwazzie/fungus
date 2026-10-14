@@ -25,14 +25,14 @@ mongoose.connect(MONGO_URL)
     process.exit(1);
   });
 
-// Схема пользователя (аккаунта)
+// Схема пользователя с логином, паролем и публичным именем
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
-  password: { type: String, required: true }
+  password: { type: String, required: true },
+  displayName: { type: String, required: true }
 });
 const User = mongoose.model('User', userSchema);
 
-// Схема сообщения
 const messageSchema = new mongoose.Schema({
   chat: { type: String, default: 'main' },
   title: { type: String, default: 'ГРИБОНИКА ОБЩИЙ' },
@@ -42,36 +42,35 @@ const messageSchema = new mongoose.Schema({
 });
 const Message = mongoose.model('Message', messageSchema);
 
-// REST API для регистрации и входа
+// API авторизации
 app.post('/api/auth', async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, displayName } = req.body;
     if (!username || !password) {
-      return res.status(400).json({ success: false, message: 'Заполните все поля' });
+      return res.status(400).json({ success: false, message: 'Заполните логин и пароль' });
     }
 
     let user = await User.findOne({ username });
     if (user) {
-      // Если пользователь существует, проверяем пароль
       if (user.password !== password) {
         return res.status(400).json({ success: false, message: 'Неверный пароль' });
       }
-      return res.json({ success: true, username: user.username });
+      return res.json({ success: true, username: user.username, displayName: user.displayName });
     } else {
-      // Если пользователя нет — создаем новый аккаунт автоматически
-      user = new User({ username, password });
+      user = new User({
+        username,
+        password,
+        displayName: displayName || ('@' + username)
+      });
       await user.save();
-      return res.json({ success: true, username: user.username });
+      return res.json({ success: true, username: user.username, displayName: user.displayName });
     }
   } catch (err) {
     res.status(500).json({ success: false, message: 'Ошибка сервера' });
   }
 });
 
-// Веб-сокеты
 io.on('connection', async (socket) => {
-  console.log('Пользователь подключился');
-
   try {
     const history = await Message.find().sort({ createdAt: 1 }).limit(300);
     socket.emit('init history', history);
@@ -81,7 +80,6 @@ io.on('connection', async (socket) => {
 
   socket.on('chat message', async (data) => {
     if (!data || !data.text || !data.sender) return;
-
     try {
       const newMessage = new Message({
         chat: data.chat || 'main',
@@ -94,10 +92,6 @@ io.on('connection', async (socket) => {
     } catch (err) {
       console.error('Ошибка при сохранении сообщения:', err);
     }
-  });
-
-  socket.on('disconnect', () => {
-    console.log('Пользователь отключился');
   });
 });
 

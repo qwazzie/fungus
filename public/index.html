@@ -16,10 +16,11 @@
       </header>
       <div class="content auth-box">
         <div class="paper card" style="align-items: center; text-align: center;">
-          <p class="body" style="margin-bottom: 12px;">Введите свое имя персонажа и пароль для доступа к секретной связи.</p>
+          <p class="body" style="margin-bottom: 12px;">Введите юзернейм, пароль и публичное имя (например, @sosiskis3 или РИН 🍄).</p>
           <form id="authForm" style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
-            <input type="text" id="authName" placeholder="Имя (например, РИН 🍄)" maxlength="24" required autocomplete="off">
+            <input type="text" id="authUsername" placeholder="Юзернейм (например, sosiskis3)" maxlength="24" required autocomplete="off">
             <input type="password" id="authPass" placeholder="Секретный пароль" required autocomplete="off">
+            <input type="text" id="authDisplay" placeholder="Публичное имя (@username или роль)" maxlength="24" autocomplete="off">
             <button type="submit" class="chip" style="justify-content: center;">Войти / Создать</button>
             <p id="authErr" class="err"></p>
           </form>
@@ -30,9 +31,10 @@
     <!-- Список чатов -->
     <section id="s-list" class="screen" hidden>
       <header class="topbar">
-        <h1 class="title" id="myAccountTitle">ГРИБОФОН</h1>
+        <h1 class="title">ГРИБОФОН</h1>
         <div class="actions">
           <button id="newChat" class="chip" title="Новый чат">+</button>
+          <button id="openProfile" class="chip" title="Профиль">⚙</button>
         </div>
       </header>
       <div id="chatList" class="content"></div>
@@ -56,13 +58,17 @@
       </form>
     </section>
 
-    <!-- Экран профиля / смены аккаунта -->
+    <!-- Экран профиля -->
     <section id="s-profile" class="screen" hidden>
       <header class="topbar">
         <button class="chip" data-back>← Назад</button>
         <h2 class="title">Профиль</h2>
       </header>
       <div class="content">
+        <div class="paper card">
+          <span class="ntag" id="profileTag">Аккаунт</span>
+          <p id="profileUser" class="body" style="margin-top: 6px;"></p>
+        </div>
         <button id="logoutBtn" class="chip" style="width: 100%; justify-content: center; background: #f8d7da;">Сменить аккаунт</button>
       </div>
     </section>
