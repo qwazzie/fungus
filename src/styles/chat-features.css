@@ -1,0 +1,62 @@
+.chat-field .field-error{min-height:18px;color:#b42318;font-size:12px;font-weight:400}
+.chat-field .pf-input.invalid{border-color:#b42318;color:#b42318}
+.mention-box{position:absolute;left:14px;bottom:74px;width:min(300px,calc(100% - 28px));max-height:300px;overflow-y:auto;padding:8px;border:2px solid var(--line);border-radius:var(--r);background:var(--bg);box-shadow:var(--shadow);z-index:7}
+.mention-box[hidden]{display:none}
+.mention-heading{padding:5px 8px 3px;color:var(--muted);font-size:12px;font-weight:600}
+.mention-row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:8px;border-radius:var(--r);text-align:left}
+.mention-row:hover{background:var(--panel)}
+.mention-row small{color:var(--muted);font-size:12px}
+
+/* ---------- message context menu ---------- */
+.msg-menu{position:fixed;z-index:30;min-width:170px;padding:6px;border:2px solid var(--line);border-radius:var(--r);background:var(--bg);box-shadow:var(--shadow);display:flex;flex-direction:column;gap:2px}
+.msg-menu[hidden]{display:none}
+.msg-menu button{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--r);text-align:left;font-size:14px;font-weight:600}
+.msg-menu button:hover{background:var(--inv-bg);color:var(--inv-text)}
+.msg-menu button svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.msg-menu .msg-menu-sep{height:2px;background:var(--soft);margin:2px 0}
+.msg-menu .danger{color:#b42318}
+.msg-menu .danger:hover{background:#b42318;color:#fff}
+
+/* ---------- selection mode ---------- */
+.select-bar{display:none;align-items:center;gap:10px;height:56px;padding:0 14px;border-bottom:2px solid var(--line);background:var(--panel)}
+.app.select-mode .head{display:none}
+.app.select-mode .select-bar{display:flex}
+.select-count{font-weight:600}
+.select-actions{margin-left:auto;display:flex;gap:8px}
+.select-actions button{display:flex;align-items:center;gap:6px;padding:7px 14px;border:2px solid var(--line);border-radius:var(--r);background:var(--bg);font-weight:600;font-size:14px}
+.select-actions button:hover{background:var(--inv-bg);color:var(--inv-text)}
+.select-actions button svg{width:16px;height:16px}
+.app.select-mode .msg{cursor:pointer}
+.app.select-mode .msg.selected{border-color:var(--inv-bg);box-shadow:0 0 0 3px var(--inv-bg),var(--shadow)}
+.app.select-mode .msg-ava{pointer-events:none}
+
+/* ---------- reply preview in composer ---------- */
+.reply-preview{display:none;align-items:center;gap:10px;padding:8px 14px;border-bottom:2px solid var(--line);background:var(--panel)}
+.reply-preview:not([hidden]){display:flex;grid-column:1 / -1;width:100%}
+.reply-quote{display:flex;align-items:center;gap:8px;flex:1;min-width:0;border-left:3px solid var(--inv-bg);padding-left:10px}
+.reply-quote .rq-name{font-weight:600;font-size:13px;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:42%}
+.reply-quote .rq-name::after{content:' |';font-weight:400;color:var(--muted)}
+.reply-quote .rq-text{color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.reply-cancel{display:none;width:28px;height:28px;place-items:center;border:2px solid var(--line);border-radius:var(--r);flex:none}
+.reply-cancel:hover{background:var(--inv-bg);color:var(--inv-text)}
+.reply-cancel svg{width:14px;height:14px}
+
+/* ---------- reply quote inside message ---------- */
+.msg-reply{grid-column:1;grid-row:1;display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:2px solid var(--line);background:var(--panel);font-size:13px;min-width:0}
+.msg-reply .mr-name{font-weight:600;flex:none;color:var(--text)}
+.msg-reply .mr-text{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.msg.has-reply .msg-top{grid-row:2}
+.msg.has-reply .body{grid-row:3}
+
+/* ---------- forwarded + edited markers ---------- */
+.msg-forwarded{font-size:12px;color:var(--muted);font-style:italic;padding:4px 12px;border-bottom:2px solid var(--line)}
+.msg-edited{display:inline-flex;align-items:center;margin-left:4px;color:var(--muted);vertical-align:-2px}.msg-edited svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- forward modal ---------- */
+.fwd-modal .pf{width:min(400px,calc(100% - 44px))}
+.fwd-list{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto}
+.fwd-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:2px solid var(--soft);border-radius:var(--r);text-align:left;width:100%}
+.fwd-item:hover{border-color:var(--line);background:var(--panel)}
+.fwd-item .ava{width:32px;height:32px;font-size:13px}
+.fwd-item span:last-child{display:flex;flex-direction:column;min-width:0}
+.fwd-item small{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
