@@ -3,7 +3,7 @@ import './src/styles/responsive.css';
 import './src/styles/settings.css';
 import './src/styles/chat-features.css';
 import { appHtml, initApp } from './app.js';
-import { auth } from './src/auth.js';
+import { auth, apiRequest } from './src/auth.js';
 
 document.getElementById('app').innerHTML = appHtml;
 
@@ -18,26 +18,13 @@ function snapshotState(ctx) {
   };
 }
 
-function stateKey(userId) { return 'fungusroom_state_' + userId; }
-function profileKey(userId) { return 'fungusroom_profile_' + userId; }
+async function saveState(state) {
+  await apiRequest('/api/state', { method: 'PUT', body: JSON.stringify({ data: state }) });
+}
 
-function saveState(userId, state) {
-  try { localStorage.setItem(stateKey(userId), JSON.stringify(state)); }
-  catch (error) { console.warn('Local state could not be saved', error); }
-}
-function loadState(userId) {
-  try {
-    const saved = localStorage.getItem(stateKey(userId));
-    return saved ? JSON.parse(saved) : null;
-  } catch (error) { console.warn('Local state is unavailable', error); return null; }
-}
-function loadProfile(userId) {
-  try { return JSON.parse(localStorage.getItem(profileKey(userId)) || 'null'); }
-  catch (error) { console.warn('Local profile is unavailable', error); return null; }
-}
-function saveProfile(userId, profile) {
-  try { localStorage.setItem(profileKey(userId), JSON.stringify(profile)); }
-  catch (error) { console.warn('Local profile could not be saved', error); }
+async function loadState() {
+  const result = await apiRequest('/api/state');
+  return result.data || null;
 }
 
 function showAuth() {
@@ -50,15 +37,9 @@ function showApp() {
 }
 
 async function loadProfileData(session, ctx) {
-  const meta = session.user.user_metadata || {};
-  let profile = loadProfile(session.user.id);
-  if (!profile) {
-    profile = { id: session.user.id, display_name: meta.display_name || 'Пользователь' };
-    saveProfile(session.user.id, profile);
-  }
-  ctx.charsApi.setMe(profile.display_name);
-  const username = meta.username || '';
-  if (username) ctx.charsApi.setMeUsername(username);
+  const user = session.user || {};
+  ctx.charsApi.setMe(user.display_name || 'Пользователь');
+  if (user.username) ctx.charsApi.setMeUsername('@' + user.username.replace(/^@/, ''));
 }
 
 async function start(session) {
@@ -68,8 +49,12 @@ async function start(session) {
 
   function save() {
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(function () {
-      saveState(session.user.id, snapshotState(ctx));
+    saveTimer = setTimeout(async function () {
+      try {
+        await saveState(snapshotState(ctx));
+      } catch (error) {
+        console.error('Could not save account data', error);
+      }
     }, 250);
   }
 
@@ -80,10 +65,10 @@ async function start(session) {
     ctx.settingsApi.load(state.settings || state.me?.settings);
   }
 
-  const userId = session.user.id;
-  applyState(loadState(userId));
+  const state = await loadState();
+  applyState(state);
   await loadProfileData(session, ctx);
-  if (!loadState(userId)) save();
+  if (!state) save();
 
   ctx.charsApi.subscribe(save);
   ctx.chatsApi.subscribe(save);
@@ -125,18 +110,11 @@ function initAuth() {
   function bootSession(session) {
     if (!session || booted) return;
     booted = true;
-    start(session);
-  }
-
-  function authEmailFor(usernameValue) {
-    const normalized = usernameValue.trim().replace(/^@/, '').toLowerCase();
-    const encoded = btoa(unescape(encodeURIComponent(normalized))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
-    return `${encoded}@accounts.fungusroom.local`;
-  }
-
-  function authPasswordFor(passwordValue) {
-    const encoded = btoa(unescape(encodeURIComponent(passwordValue)));
-    return `${encoded}.fungusroom-password`;
+    start(session).catch(function (error) {
+      booted = false;
+      showAuth();
+      setStatus(error.message || 'Не удалось загрузить данные аккаунта. Попробуйте ещё раз.', false);
+    });
   }
 
   function friendlyError(message) {
@@ -162,13 +140,13 @@ function initAuth() {
       return;
     }
     username.value = usernameValue;
-    const credentials = { email: authEmailFor(usernameValue), password: authPasswordFor(password.value) };
+    const credentials = { username: usernameValue, password: password.value };
     try {
       if (registerMode) {
         const name = displayName.value.trim() || usernameValue;
         const result = await auth.signUp({
           ...credentials,
-          options: { data: { display_name: name, username: usernameValue } }
+          displayName: name
         });
         if (result.error) {
           if (result.error.message.includes('already registered')) {
